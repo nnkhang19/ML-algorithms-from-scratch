@@ -1,28 +1,52 @@
 import numpy as np
 
-class LinearRegression:
-    def __init__(self, _shape, epochs = 10000, learning_rate = 0.001):
-        self.num_of_samples = _shape[0]
-        self.dim = _shape[1]
-        self.w = np.random.normal((0, np.sqrt(1/np.sum(_shape))),size = (self.dim + 1, 1))
-        self.epochs = epochs
+
+
+class LinearRegression(object):
+    
+    def __init__(self, input_shape, learning_rate, iters):
+        self.shape = input_shape
         self.learning_rate = learning_rate
+        self.iters = iters
+        
+        # initialize weights:
+        self.w = np.random.normal(scale = 1./np.sqrt(np.sum(input_shape)),size = (input_shape[1],1))
+        self.b = np.random.normal(scale = 1./np.sqrt(np.sum(input_shape)))
+        
 
     def fit(self, X, y):
-        self.costs = []
-        y = y.reshape((-1, 1))
-        X = np.concatenate((X, np.ones((X.shape[0], 1))), axis = 1)
+        if y.shape[0] == 1:
+            y = y.reshape((y.shape[1], y.shape[0]))
+        
+        for i in range(self.iters):
+            y_hat = X @ self.w + self.b
+            loss = self.compute_loss(y_hat, y)
+            grads = self.compute_gradient(X, y, y_hat)
+            
+            # update gradient
+            self.w -= self.learning_rate * grads
+            self.b -= self.learning_rate * loss * 2
+            
+            if i % 10 == 0:
+                print("Iter {}, Loss {}".format(i, loss))
 
-        for e in range(self.epochs):
-            y_hat = X @ self.w
-            loss = (np.sum(y_hat - y) ** 2) / (2 * self.num_of_samples)
-            dw   = (X.T @ (y_hat - y))/ float(self.num_of_samples)
-            self.w = self.w - self.learning_rate * dw
-            if e % 1000 == 0:
-                print("Epoch {} Loss: {}".format(e, loss))
-                self.costs.append(loss)
+        
+    def compute_loss(self, y_hat, y):
+        N = y.shape[0]
+        return (0.5 / N) * np.sum(y - y_hat)**2
 
-    def predict(self, data):
-        data = np.concatenate((data, np.ones((data.shape[0], 1))), axis = 1)
-        return (data @ self.w).reshape((len(data), ))
+    def compute_gradient(self, X, y, y_hat):
+        N = y.shape[0]
+        return X.T @ (y_hat - y) / N
 
+    @property
+    def weights(self):
+        return [self.w, self.b]
+
+
+if __name__ == '__main__':
+    X = np.array([[1.0, 2.1], [3.5, 4.6],[7, 8]], dtype = np.float32)
+    y = np.array([[2,3,4]])
+
+    model = LinearRegression(X.shape, learning_rate = 0.001, iters = 100)
+    model.fit(X, y)
