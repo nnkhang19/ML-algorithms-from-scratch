@@ -1,5 +1,5 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 
 class LinearRegression(object):
@@ -42,11 +42,14 @@ class LinearRegression(object):
     @property
     def weights(self):
         return [self.w, self.b]
-
+    
+    def predict(self, X_test):
+        return X_test @ self.w + self.b
 
 if __name__ == '__main__':
     X = np.array([[1.0, 2.1], [3.5, 4.6],[7, 8]], dtype = np.float32)
     y = np.array([[2,3,4]])
 
-    model = LinearRegression(X.shape, learning_rate = 0.001, iters = 100)
+    model = LinearRegression(X.shape, learning_rate = 0.001, iters = 500)
     model.fit(X, y)
+    
